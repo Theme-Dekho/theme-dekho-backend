@@ -65,8 +65,16 @@ if not DATABASE_URL:
     )
 
 
+# BASE_DIR = Path(__file__).resolve().parent.parent
+# CA_CERT_PATH = BASE_DIR / "ca.pem"
 BASE_DIR = Path(__file__).resolve().parent.parent
-CA_CERT_PATH = BASE_DIR / "ca.pem"
+
+CA_CERT_PATH = Path(
+    os.getenv(
+        "CA_CERT_PATH",
+        str(BASE_DIR / "ca.pem"),
+    )
+)
 
 if not CA_CERT_PATH.exists():
     raise RuntimeError(

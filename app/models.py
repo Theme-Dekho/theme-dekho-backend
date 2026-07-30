@@ -126,6 +126,6 @@ class ActivityEvent(Base):
     created_at = Column(
         DateTime,
         nullable=False,
-        server_default=func.now(),
+        default=now_ist,
         index=True,
     )    

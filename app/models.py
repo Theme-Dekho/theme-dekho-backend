@@ -42,6 +42,13 @@ class User(Base):
         nullable=True,
     )
 
+    email: Mapped[str | None] = mapped_column(
+        String(255),
+        unique=True,
+        nullable=True,
+        index=True,
+    )
+
     is_phone_verified: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,

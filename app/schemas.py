@@ -1,7 +1,6 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, EmailStr, field_validator
 import re
 from typing import Any
-from pydantic import BaseModel, Field, field_validator
 
 
 class GenerateOTPRequest(BaseModel):
@@ -18,7 +17,12 @@ class GenerateOTPRequest(BaseModel):
         return value
 
 
+# class VerifyOTPRequest(BaseModel):
+#     phone: str
+#     otp: str
 class VerifyOTPRequest(BaseModel):
+    name: str = Field(min_length=2, max_length=100)
+    email: EmailStr
     phone: str
     otp: str
 

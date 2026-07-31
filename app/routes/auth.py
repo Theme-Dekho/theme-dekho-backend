@@ -191,6 +191,13 @@ async def verify_otp(
     response: Response,
     database: Session = Depends(get_db),
 ):
+    print(
+        "VERIFY PAYLOAD:",
+        data.name,
+        data.email,
+        data.phone,
+    )
+    
     otp_key = f"otp:{data.phone}"
     attempt_key = f"attempt:{data.phone}"
     lock_key = f"lock:{data.phone}"
@@ -232,10 +239,22 @@ async def verify_otp(
             )
 
             # Create new user
+            # if user is None:
+            #     user = User(
+            #         phone=data.phone,
+            #         name=None,
+            #         is_phone_verified=True,
+            #         status="active",
+            #         last_login_at=current_time,
+            #     )
+
+            #     database.add(user)
+
             if user is None:
                 user = User(
                     phone=data.phone,
-                    name=None,
+                    name=data.name.strip(),
+                    email=data.email.strip().lower(),
                     is_phone_verified=True,
                     status="active",
                     last_login_at=current_time,
@@ -244,6 +263,15 @@ async def verify_otp(
                 database.add(user)
 
             # Update existing user
+            # else:
+            #     if user.status != "active":
+            #         raise HTTPException(
+            #             status_code=403,
+            #             detail="This account is blocked.",
+            #         )
+
+            #     user.is_phone_verified = True
+            #     user.last_login_at = current_time
             else:
                 if user.status != "active":
                     raise HTTPException(
@@ -251,11 +279,21 @@ async def verify_otp(
                         detail="This account is blocked.",
                     )
 
+                user.name = data.name.strip()
+                user.email = data.email.strip().lower()
                 user.is_phone_verified = True
                 user.last_login_at = current_time
 
             database.commit()
             database.refresh(user)
+
+            print(
+                "SAVED USER:",
+                user.id,
+                user.name,
+                user.email,
+                user.phone,
+            )
 
             # Create active session in Redis
             session_id = create_session(
@@ -316,10 +354,16 @@ async def verify_otp(
             "status": "success",
             "message": "OTP Verified Successfully",
             "authenticated": True,
+            # "user": {
+            #     "id": user.id,
+            #     "phone": user.phone,
+            #     "name": user.name,
+            # },
             "user": {
                 "id": user.id,
                 "phone": user.phone,
                 "name": user.name,
+                "email": user.email,
             },
         }
 
@@ -433,10 +477,16 @@ async def get_current_user(
     return {
         "status": "success",
         "authenticated": True,
+        # "user": {
+        #     "id": user.id,
+        #     "phone": user.phone,
+        #     "name": user.name,
+        # },
         "user": {
             "id": user.id,
             "phone": user.phone,
             "name": user.name,
+            "email": user.email,
         },
     }
 

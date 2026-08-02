@@ -1,13 +1,20 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from sqlalchemy import BigInteger, Boolean, DateTime, String
+# from sqlalchemy import BigInteger, Boolean, DateTime, String
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    DateTime,
+    ForeignKey,
+    JSON,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
-from sqlalchemy import (
-    Column,
-    JSON,
-    func
-)
+from sqlalchemy import Column
 
 IST = ZoneInfo("Asia/Kolkata")
 
@@ -135,4 +142,139 @@ class ActivityEvent(Base):
         nullable=False,
         server_default=func.now(),
         index=True,
-    )    
+    )
+
+class UserWishlist(Base):
+    __tablename__ = "user_wishlist"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id",
+            "product_id",
+            name="uq_wishlist_user_product",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey(
+            "users.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    product_id: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        index=True,
+    )
+
+    product_slug: Mapped[str] = mapped_column(
+        String(200),
+        nullable=False,
+    )
+
+    product_name: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    product_label: Mapped[str | None] = mapped_column(
+        String(150),
+        nullable=True,
+    )
+
+    product_image: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+    )
+
+
+class Enquiry(Base):
+    __tablename__ = "enquiries"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey(
+            "users.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    product_id: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        index=True,
+    )
+
+    product_slug: Mapped[str] = mapped_column(
+        String(200),
+        nullable=False,
+    )
+
+    product_name: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    customer_name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    email: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    phone: Mapped[str] = mapped_column(
+        String(15),
+        nullable=False,
+    )
+
+    message: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(30),
+        nullable=False,
+        default="submitted",
+        index=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+        onupdate=now_ist,
+    )        

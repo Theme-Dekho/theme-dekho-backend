@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, EmailStr, field_validator
 import re
 from typing import Any
+from datetime import datetime
 
 
 class GenerateOTPRequest(BaseModel):
@@ -81,3 +82,105 @@ class AnalyticsEventCreate(BaseModel):
             )
 
         return cleaned_value    
+
+class WishlistItemCreate(BaseModel):
+    product_id: str = Field(
+        min_length=1,
+        max_length=100,
+    )
+
+    product_slug: str = Field(
+        min_length=1,
+        max_length=200,
+    )
+
+    product_name: str = Field(
+        min_length=1,
+        max_length=255,
+    )
+
+    product_label: str | None = Field(
+        default=None,
+        max_length=150,
+    )
+
+    product_image: str | None = Field(
+        default=None,
+        max_length=500,
+    )
+
+
+class WishlistItemResponse(BaseModel):
+    id: int
+    product_id: str
+    product_slug: str
+    product_name: str
+    product_label: str | None
+    product_image: str | None
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+    }
+
+
+class WishlistResponse(BaseModel):
+    items: list[WishlistItemResponse]
+    count: int
+
+
+class EnquiryCreate(BaseModel):
+    product_id: str = Field(
+        min_length=1,
+        max_length=100,
+    )
+
+    product_slug: str = Field(
+        min_length=1,
+        max_length=200,
+    )
+
+    product_name: str = Field(
+        min_length=1,
+        max_length=255,
+    )
+
+    customer_name: str = Field(
+        min_length=2,
+        max_length=100,
+    )
+
+    email: EmailStr
+
+    phone: str = Field(
+        min_length=10,
+        max_length=15,
+    )
+
+    message: str | None = Field(
+        default=None,
+        max_length=2000,
+    )
+
+
+class EnquiryResponse(BaseModel):
+    id: int
+    product_id: str
+    product_slug: str
+    product_name: str
+    customer_name: str
+    email: str
+    phone: str
+    message: str | None
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+    }
+
+
+class EnquiryListResponse(BaseModel):
+    items: list[EnquiryResponse]
+    count: int    

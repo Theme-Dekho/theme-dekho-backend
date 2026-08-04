@@ -52,3 +52,29 @@ def get_current_user(
         )
 
     return user
+
+def get_optional_current_user(
+    request: Request,
+    database: Session = Depends(get_db),
+) -> User | None:
+    session_id = request.cookies.get("session_id")
+
+    if not session_id:
+        return None
+
+    session_data = get_session(session_id)
+
+    if session_data is None:
+        return None
+
+    user_id = session_data.get("user_id")
+
+    if user_id is None:
+        return None
+
+    user = database.get(User, user_id)
+
+    if user is None or user.status != "active":
+        return None
+
+    return user

@@ -213,15 +213,24 @@ class Enquiry(Base):
         autoincrement=True,
     )
 
-    user_id: Mapped[int] = mapped_column(
-        BigInteger,
-        ForeignKey(
-            "users.id",
-            ondelete="CASCADE",
-        ),
-        nullable=False,
-        index=True,
-    )
+    # user_id: Mapped[int] = mapped_column(
+    #     BigInteger,
+    #     ForeignKey(
+    #         "users.id",
+    #         ondelete="CASCADE",
+    #     ),
+    #     nullable=False,
+    #     index=True,
+    # )
+    user_id: Mapped[int | None] = mapped_column(
+            BigInteger,
+            ForeignKey(
+                "users.id",
+                ondelete="SET NULL",
+            ),
+            nullable=True,
+            index=True,
+        )
 
     product_id: Mapped[str] = mapped_column(
         String(100),
@@ -252,6 +261,15 @@ class Enquiry(Base):
     phone: Mapped[str] = mapped_column(
         String(15),
         nullable=False,
+    )
+
+    city: Mapped[str | None] = mapped_column(
+    String(100),
+    nullable=True,
+)
+    selected_addons: Mapped[list | None] = mapped_column(
+        JSON,
+        nullable=True,
     )
 
     message: Mapped[str | None] = mapped_column(

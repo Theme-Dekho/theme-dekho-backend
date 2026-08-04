@@ -157,6 +157,15 @@ class EnquiryCreate(BaseModel):
         max_length=15,
     )
 
+    city: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
+    selected_addons: list[str] = Field(
+        default_factory=list,
+    )
+
     message: str | None = Field(
         default=None,
         max_length=2000,
@@ -171,6 +180,8 @@ class EnquiryResponse(BaseModel):
     customer_name: str
     email: str
     phone: str
+    city: str | None
+    selected_addons: list[str] | None
     message: str | None
     status: str
     created_at: datetime

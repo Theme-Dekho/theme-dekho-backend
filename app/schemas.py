@@ -195,3 +195,50 @@ class EnquiryResponse(BaseModel):
 class EnquiryListResponse(BaseModel):
     items: list[EnquiryResponse]
     count: int    
+
+
+class QuoteRequestCreate(BaseModel):
+    business_name: str = Field(
+        min_length=2,
+        max_length=150,
+    )
+
+    whatsapp_number: str = Field(
+        min_length=10,
+        max_length=15,
+    )
+
+    website_type: str = Field(
+        min_length=2,
+        max_length=100,
+    )
+
+    @field_validator("whatsapp_number")
+    @classmethod
+    def validate_whatsapp_number(
+        cls,
+        value: str,
+    ) -> str:
+        cleaned_value = value.strip()
+
+        if not re.fullmatch(r"[6-9]\d{9}", cleaned_value):
+            raise ValueError(
+                "Invalid Indian WhatsApp number.",
+            )
+
+        return cleaned_value
+
+
+class QuoteRequestResponse(BaseModel):
+    id: int
+    user_id: int | None
+    business_name: str
+    whatsapp_number: str
+    website_type: str
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+    }    

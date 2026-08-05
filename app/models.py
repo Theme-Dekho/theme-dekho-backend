@@ -213,15 +213,6 @@ class Enquiry(Base):
         autoincrement=True,
     )
 
-    # user_id: Mapped[int] = mapped_column(
-    #     BigInteger,
-    #     ForeignKey(
-    #         "users.id",
-    #         ondelete="CASCADE",
-    #     ),
-    #     nullable=False,
-    #     index=True,
-    # )
     user_id: Mapped[int | None] = mapped_column(
             BigInteger,
             ForeignKey(
@@ -295,4 +286,59 @@ class Enquiry(Base):
         nullable=False,
         default=now_ist,
         onupdate=now_ist,
-    )        
+    )
+
+class QuoteRequest(Base):
+    __tablename__ = "quote_requests"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    user_id: Mapped[int | None] = mapped_column(
+        BigInteger,
+        ForeignKey(
+            "users.id",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
+        index=True,
+    )
+
+    business_name: Mapped[str] = mapped_column(
+        String(150),
+        nullable=False,
+    )
+
+    whatsapp_number: Mapped[str] = mapped_column(
+        String(15),
+        nullable=False,
+        index=True,
+    )
+
+    website_type: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(30),
+        nullable=False,
+        default="submitted",
+        index=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+        onupdate=now_ist,
+    )           

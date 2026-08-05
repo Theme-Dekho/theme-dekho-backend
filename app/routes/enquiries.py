@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -47,6 +47,34 @@ def get_enquiries(
         ],
         count=len(items),
     )
+
+
+@router.delete(
+    "/{enquiry_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_enquiry(
+    enquiry_id: int,
+    current_user: User = Depends(get_current_user),
+    database: Session = Depends(get_db),
+):
+    statement = select(Enquiry).where(
+        Enquiry.id == enquiry_id,
+        Enquiry.user_id == current_user.id,
+    )
+
+    enquiry = database.scalar(statement)
+
+    if enquiry is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Enquiry not found.",
+        )
+
+    database.delete(enquiry)
+    database.commit()
+
+    return None
 
 
 @router.post(

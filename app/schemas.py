@@ -19,13 +19,89 @@ class GenerateOTPRequest(BaseModel):
 
 
 # class VerifyOTPRequest(BaseModel):
+#     name: str = Field(min_length=2, max_length=100)
+#     email: EmailStr
 #     phone: str
 #     otp: str
-class VerifyOTPRequest(BaseModel):
-    name: str = Field(min_length=2, max_length=100)
+class RegisterVerifyOTPRequest(BaseModel):
+    name: str = Field(
+        min_length=2,
+        max_length=100,
+    )
+
     email: EmailStr
+
     phone: str
-    otp: str
+
+    otp: str = Field(
+        min_length=4,
+        max_length=6,
+    )
+
+    password: str = Field(
+        min_length=8,
+        max_length=128,
+    )
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(
+        cls,
+        value: str,
+    ) -> str:
+        cleaned_value = value.strip()
+
+        if not re.fullmatch(r"[6-9]\d{9}", cleaned_value):
+            raise ValueError(
+                "Invalid Indian Mobile Number",
+            )
+
+        return cleaned_value
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(
+        cls,
+        value: str,
+    ) -> str:
+        if not re.search(r"[A-Z]", value):
+            raise ValueError(
+                "Password must contain at least one uppercase letter.",
+            )
+
+        if not re.search(r"[a-z]", value):
+            raise ValueError(
+                "Password must contain at least one lowercase letter.",
+            )
+
+        if not re.search(r"\d", value):
+            raise ValueError(
+                "Password must contain at least one number.",
+            )
+
+        return value
+
+class LoginRequest(BaseModel):
+    phone: str
+    password: str = Field(
+        min_length=8,
+        max_length=128,
+    )
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(
+        cls,
+        value: str,
+    ) -> str:
+        cleaned_value = value.strip()
+
+        if not re.fullmatch(r"[6-9]\d{9}", cleaned_value):
+            raise ValueError(
+                "Invalid Indian Mobile Number",
+            )
+
+        return cleaned_value    
 
 
 class AnalyticsEventCreate(BaseModel):

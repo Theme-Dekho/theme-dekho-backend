@@ -17,8 +17,8 @@ from app.database import get_db
 from app.models import User
 from app.otp import generate_otp
 from app.redis_client import redis_client
-from app.schemas import GenerateOTPRequest, VerifyOTPRequest
-from app.security import hash_otp
+from app.schemas import GenerateOTPRequest, RegisterVerifyOTPRequest, LoginRequest
+from app.security import hash_otp,   hash_password, verify_password
 from app.services.session_service import (
     create_session,
     delete_session,
@@ -187,7 +187,7 @@ async def generate_otp_api(
 
 @router.post("/verify-otp")
 async def verify_otp(
-    data: VerifyOTPRequest,
+    data: RegisterVerifyOTPRequest,
     response: Response,
     database: Session = Depends(get_db),
 ):
@@ -238,11 +238,11 @@ async def verify_otp(
                 timezone.utc
             )
 
-            # Create new user
             # if user is None:
             #     user = User(
             #         phone=data.phone,
-            #         name=None,
+            #         name=data.name.strip(),
+            #         email=data.email.strip().lower(),
             #         is_phone_verified=True,
             #         status="active",
             #         last_login_at=current_time,
@@ -250,19 +250,6 @@ async def verify_otp(
 
             #     database.add(user)
 
-            if user is None:
-                user = User(
-                    phone=data.phone,
-                    name=data.name.strip(),
-                    email=data.email.strip().lower(),
-                    is_phone_verified=True,
-                    status="active",
-                    last_login_at=current_time,
-                )
-
-                database.add(user)
-
-            # Update existing user
             # else:
             #     if user.status != "active":
             #         raise HTTPException(
@@ -270,8 +257,25 @@ async def verify_otp(
             #             detail="This account is blocked.",
             #         )
 
+            #     user.name = data.name.strip()
+            #     user.email = data.email.strip().lower()
             #     user.is_phone_verified = True
             #     user.last_login_at = current_time
+            if user is None:
+                user = User(
+                    phone=data.phone,
+                    name=data.name.strip(),
+                    email=data.email.strip().lower(),
+                    password_hash=hash_password(
+                        data.password,
+                    ),
+                    is_phone_verified=True,
+                    status="active",
+                    last_login_at=current_time,
+                )
+
+                database.add(user)
+
             else:
                 if user.status != "active":
                     raise HTTPException(
@@ -279,8 +283,23 @@ async def verify_otp(
                         detail="This account is blocked.",
                     )
 
+                # A password already exists, so this phone number
+                # has already completed registration.
+                if user.password_hash:
+                    raise HTTPException(
+                        status_code=409,
+                        detail=(
+                            "This phone number is already registered. "
+                            "Please log in using your password."
+                        ),
+                    )
+
+                # Support users created before password login was added.
                 user.name = data.name.strip()
                 user.email = data.email.strip().lower()
+                user.password_hash = hash_password(
+                    data.password,
+                )
                 user.is_phone_verified = True
                 user.last_login_at = current_time
 
@@ -408,6 +427,87 @@ async def verify_otp(
             "attempts remaining."
         ),
     )
+
+
+
+# ---------------------------------------------------------
+# Login authenticated user
+# ---------------------------------------------------------
+
+@router.post("/login")
+async def login_with_password(
+    data: LoginRequest,
+    response: Response,
+    database: Session = Depends(get_db),
+):
+    user_statement = select(User).where(
+        User.phone == data.phone
+    )
+
+    user = database.scalar(user_statement)
+
+    if user is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid phone number or password.",
+        )
+
+    if user.status != "active":
+        raise HTTPException(
+            status_code=403,
+            detail="This account is blocked.",
+        )
+
+    if not user.password_hash:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Password login is not configured for this account. "
+                "Please register using OTP first."
+            ),
+        )
+
+    if not verify_password(
+        data.password,
+        user.password_hash,
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid phone number or password.",
+        )
+
+    current_time = datetime.now(timezone.utc)
+    user.last_login_at = current_time
+
+    database.commit()
+    database.refresh(user)
+
+    session_id = create_session(
+        user_id=user.id,
+        phone=user.phone,
+    )
+
+    response.set_cookie(
+        key="session_id",
+        value=session_id,
+        max_age=SESSION_COOKIE_MAX_AGE,
+        httponly=True,
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE,
+        path="/",
+    )
+
+    return {
+        "status": "success",
+        "message": "Logged in successfully.",
+        "authenticated": True,
+        "user": {
+            "id": user.id,
+            "phone": user.phone,
+            "name": user.name,
+            "email": user.email,
+        },
+    }
 
 
 # ---------------------------------------------------------

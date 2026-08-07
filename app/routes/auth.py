@@ -17,7 +17,7 @@ from app.database import get_db
 from app.models import User
 from app.otp import generate_otp
 from app.redis_client import redis_client
-from app.schemas import GenerateOTPRequest, RegisterVerifyOTPRequest, LoginRequest
+from app.schemas import GenerateOTPRequest, RegisterVerifyOTPRequest, LoginRequest, ForgotPasswordRequest
 from app.security import hash_otp,   hash_password, verify_password
 from app.services.session_service import (
     create_session,
@@ -508,6 +508,39 @@ async def login_with_password(
             "email": user.email,
         },
     }
+
+# ---------------------------------------------------------
+# Forgot password - check registered phone
+# ---------------------------------------------------------
+
+@router.post("/forgot-password")
+async def forgot_password(
+    data: ForgotPasswordRequest,
+    database: Session = Depends(get_db),
+    ):
+    user_statement = select(User).where(
+        User.phone == data.phone
+    )
+
+    user = database.scalar(user_statement)
+
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No account found with this mobile number.",
+        )
+
+    if user.status != "active":
+        raise HTTPException(
+            status_code=403,
+            detail="This account is blocked.",
+        )
+
+    return {
+        "status": "success",
+        "message": "Account found. Ready to send password reset OTP.",
+        "phone": data.phone,
+    }    
 
 
 # ---------------------------------------------------------

@@ -80,6 +80,32 @@ class RegisterVerifyOTPRequest(BaseModel):
             )
 
         return value
+    
+
+class ForgotPasswordRequest(BaseModel):
+    phone: str
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, value: str) -> str:
+        phone = value.strip()
+
+        if not phone.isdigit():
+            raise ValueError(
+                "Mobile number must contain only digits."
+            )
+
+        if len(phone) != 10:
+            raise ValueError(
+                "Enter a valid 10-digit mobile number."
+            )
+
+        if phone[0] not in "6789":
+            raise ValueError(
+                "Enter a valid Indian mobile number."
+            )
+
+        return phone    
 
 class LoginRequest(BaseModel):
     phone: str

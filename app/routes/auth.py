@@ -17,7 +17,7 @@ from app.database import get_db
 from app.models import User
 from app.otp import generate_otp
 from app.redis_client import redis_client
-from app.schemas import GenerateOTPRequest, RegisterVerifyOTPRequest, LoginRequest, ForgotPasswordRequest
+from app.schemas import GenerateOTPRequest, RegisterVerifyOTPRequest, LoginRequest, ForgotPasswordRequest, VerifyResetOTPRequest, ResetPasswordRequest
 from app.security import hash_otp,   hash_password, verify_password
 from app.services.session_service import (
     create_session,
@@ -536,11 +536,220 @@ async def forgot_password(
             detail="This account is blocked.",
         )
 
+    reset_otp = generate_otp()
+    hashed_reset_otp = hash_otp(reset_otp)
+
+    reset_otp_key = f"password_reset_otp:{data.phone}"
+
+    redis_client.setex(
+        reset_otp_key,
+        OTP_EXPIRY,
+        hashed_reset_otp,
+    )
+
+    send_whatsapp_otp(
+        data.phone,
+        reset_otp,
+    )
+
     return {
         "status": "success",
-        "message": "Account found. Ready to send password reset OTP.",
+        "message": "Password reset OTP sent via WhatsApp.",
         "phone": data.phone,
-    }    
+        "expires_in": OTP_EXPIRY,
+    }
+
+
+# ---------------------------------------------------------
+# Verify password reset OTP
+# ---------------------------------------------------------
+
+@router.post("/verify-reset-otp")
+async def verify_reset_otp(
+    data: VerifyResetOTPRequest,
+):
+    reset_otp_key = (
+        f"password_reset_otp:{data.phone}"
+    )
+
+    reset_attempt_key = (
+        f"password_reset_attempt:{data.phone}"
+    )
+
+    reset_lock_key = (
+        f"password_reset_lock:{data.phone}"
+    )
+
+    # Check temporary lock
+    if redis_client.exists(reset_lock_key):
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                "Too many failed attempts. "
+                "Try again later."
+            ),
+        )
+
+    stored_otp = redis_client.get(
+        reset_otp_key
+    )
+
+    if stored_otp is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Reset OTP expired or not found.",
+        )
+
+    submitted_otp_hash = hash_otp(
+        data.otp
+    )
+
+    # Correct OTP
+    if stored_otp == submitted_otp_hash:
+        reset_verified_key = (
+            f"password_reset_verified:{data.phone}"
+        )
+
+        redis_client.setex(
+            reset_verified_key,
+            600,  # 10 minutes
+            "verified",
+        )
+
+        redis_client.delete(
+            reset_otp_key
+        )
+
+        redis_client.delete(
+            reset_attempt_key
+        )
+
+        return {
+            "status": "success",
+            "message": "OTP verified successfully.",
+            "phone": data.phone,
+        }
+
+    # Incorrect OTP
+    attempts = redis_client.incr(
+        reset_attempt_key
+    )
+
+    if attempts == 1:
+        redis_client.expire(
+            reset_attempt_key,
+            OTP_EXPIRY,
+        )
+
+    remaining = (
+        MAX_OTP_ATTEMPTS - attempts
+    )
+
+    if attempts >= MAX_OTP_ATTEMPTS:
+        redis_client.delete(
+            reset_otp_key
+        )
+
+        redis_client.delete(
+            reset_attempt_key
+        )
+
+        redis_client.setex(
+            reset_lock_key,
+            OTP_LOCK_TIME,
+            "locked",
+        )
+
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                "Maximum attempts exceeded. "
+                "Password reset temporarily locked."
+            ),
+        )
+
+    raise HTTPException(
+        status_code=400,
+        detail=(
+            f"Invalid OTP. {remaining} "
+            "attempts remaining."
+        ),
+    )
+
+
+# ---------------------------------------------------------
+# Reset password
+# ---------------------------------------------------------
+
+@router.post("/reset-password")
+async def reset_password(
+    data: ResetPasswordRequest,
+    database: Session = Depends(get_db),
+):
+    reset_verified_key = (
+        f"password_reset_verified:{data.phone}"
+    )
+
+    reset_verified = redis_client.get(
+        reset_verified_key
+    )
+
+    if reset_verified != "verified":
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Password reset is not authorized "
+                "or verification has expired."
+            ),
+        )
+
+    user_statement = select(User).where(
+        User.phone == data.phone
+    )
+
+    user = database.scalar(user_statement)
+
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="User account not found.",
+        )
+
+    if user.status != "active":
+        raise HTTPException(
+            status_code=403,
+            detail="This account is blocked.",
+        )
+
+    try:
+        user.password_hash = hash_password(
+            data.new_password
+        )
+
+        database.commit()
+        database.refresh(user)
+
+    except Exception as error:
+        database.rollback()
+
+        logger.exception(
+            "Failed to reset password for %s",
+            data.phone,
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to reset password.",
+        ) from error
+
+    redis_client.delete(
+        reset_verified_key
+    )
+
+    return {
+        "status": "success",
+        "message": "Password reset successfully.",
+    }
 
 
 # ---------------------------------------------------------

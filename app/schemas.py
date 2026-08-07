@@ -105,7 +105,94 @@ class ForgotPasswordRequest(BaseModel):
                 "Enter a valid Indian mobile number."
             )
 
-        return phone    
+        return phone   
+    
+
+class VerifyResetOTPRequest(BaseModel):
+    phone: str
+
+    otp: str = Field(
+        min_length=4,
+        max_length=6,
+    )
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(
+        cls,
+        value: str,
+    ) -> str:
+        cleaned_value = value.strip()
+
+        if not re.fullmatch(r"[6-9]\d{9}", cleaned_value):
+            raise ValueError(
+                "Invalid Indian Mobile Number",
+            )
+
+        return cleaned_value
+
+    @field_validator("otp")
+    @classmethod
+    def validate_otp(
+        cls,
+        value: str,
+    ) -> str:
+        cleaned_value = value.strip()
+
+        if not cleaned_value.isdigit():
+            raise ValueError(
+                "OTP must contain only digits.",
+            )
+
+        return cleaned_value 
+
+
+class ResetPasswordRequest(BaseModel):
+    phone: str
+
+    new_password: str = Field(
+        min_length=8,
+        max_length=128,
+    )
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(
+        cls,
+        value: str,
+    ) -> str:
+        cleaned_value = value.strip()
+
+        if not re.fullmatch(r"[6-9]\d{9}", cleaned_value):
+            raise ValueError(
+                "Invalid Indian Mobile Number",
+            )
+
+        return cleaned_value
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(
+        cls,
+        value: str,
+    ) -> str:
+        if not re.search(r"[A-Z]", value):
+            raise ValueError(
+                "Password must contain at least one uppercase letter.",
+            )
+
+        if not re.search(r"[a-z]", value):
+            raise ValueError(
+                "Password must contain at least one lowercase letter.",
+            )
+
+        if not re.search(r"\d", value):
+            raise ValueError(
+                "Password must contain at least one number.",
+            )
+
+        return value
+    
 
 class LoginRequest(BaseModel):
     phone: str

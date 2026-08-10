@@ -149,6 +149,67 @@ class ActivityEvent(Base):
         index=True,
     )
 
+
+class UserAttribution(Base):
+    __tablename__ = "user_attributions"
+
+    id = Column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    user_id = Column(
+        BigInteger,
+        nullable=True,
+        index=True,
+    )
+
+    session_id = Column(
+        String(64),
+        nullable=True,
+        index=True,
+    )
+
+    landing_category = Column(
+        String(50),
+        nullable=True,
+        index=True,
+    )
+
+    landing_page = Column(
+        String(255),
+        nullable=True,
+    )
+
+    utm_source = Column(
+        String(100),
+        nullable=True,
+        index=True,
+    )
+
+    utm_medium = Column(
+        String(100),
+        nullable=True,
+    )
+
+    utm_campaign = Column(
+        String(150),
+        nullable=True,
+    )
+
+    utm_content = Column(
+        String(150),
+        nullable=True,
+    )
+
+    created_at = Column(
+        DateTime,
+        nullable=False,
+        server_default=func.now(),
+    )
+    
+
 class UserWishlist(Base):
     __tablename__ = "user_wishlist"
 

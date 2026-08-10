@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app import models
 from app.database import Base, engine
 from app.routes.auth import router as auth_router
+from app.routes import attribution
 from app.routes import account
 from app.routes.analytics import router as analytics_router
 from app.routes.wishlist import router as wishlist_router
@@ -30,6 +31,7 @@ app.add_middleware(
 Base.metadata.create_all(bind=engine)
 
 app.include_router(auth_router)
+app.include_router(attribution.router)
 app.include_router(account.router)
 app.include_router(analytics_router)
 app.include_router(wishlist_router)

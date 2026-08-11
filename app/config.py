@@ -56,14 +56,14 @@ if not IP_HASH_SECRET:
 
 
 
-print(
-    "WhatsApp token loaded:",
-    f"{ACCESS_TOKEN[:8]}...{ACCESS_TOKEN[-4:]}",
-)
-print("Token loaded:", bool(ACCESS_TOKEN))
-print("Token prefix:", ACCESS_TOKEN[:8] if ACCESS_TOKEN else "missing")
-print("Token length:", len(ACCESS_TOKEN) if ACCESS_TOKEN else 0)
-print("Starts with Bearer:", ACCESS_TOKEN.startswith("Bearer") if ACCESS_TOKEN else False)
-print("Phone Number ID:", PHONE_NUMBER_ID)
-print("Graph Version:", GRAPH_VERSION)
-print("IP hash secret loaded:", bool(IP_HASH_SECRET))
+# print(
+#     "WhatsApp token loaded:",
+#     f"{ACCESS_TOKEN[:8]}...{ACCESS_TOKEN[-4:]}",
+# )
+# print("Token loaded:", bool(ACCESS_TOKEN))
+# print("Token prefix:", ACCESS_TOKEN[:8] if ACCESS_TOKEN else "missing")
+# print("Token length:", len(ACCESS_TOKEN) if ACCESS_TOKEN else 0)
+# print("Starts with Bearer:", ACCESS_TOKEN.startswith("Bearer") if ACCESS_TOKEN else False)
+# print("Phone Number ID:", PHONE_NUMBER_ID)
+# print("Graph Version:", GRAPH_VERSION)
+# print("IP hash secret loaded:", bool(IP_HASH_SECRET))

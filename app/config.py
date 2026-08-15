@@ -1,13 +1,3 @@
-# from dotenv import load_dotenv
-# import os
-
-# load_dotenv()
-
-# ACCESS_TOKEN = os.getenv("WHATSAPP_ACCESS_TOKEN")
-# PHONE_NUMBER_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID")
-# GRAPH_VERSION = "v25.0"
-
-
 from dotenv import load_dotenv
 import os
 
@@ -33,6 +23,21 @@ IP_HASH_SECRET = os.getenv(
     "",
 ).strip()
 
+LLM_PROVIDER = os.getenv(
+    "LLM_PROVIDER",
+    "",
+).strip().lower()
+
+LLM_MODEL = os.getenv(
+    "LLM_MODEL",
+    "",
+).strip()
+
+LLM_API_KEY = os.getenv(
+    "LLM_API_KEY",
+    "",
+).strip()
+
 
 if not ACCESS_TOKEN:
     raise RuntimeError(
@@ -54,16 +59,18 @@ if not IP_HASH_SECRET:
         "IP_HASH_SECRET is missing from the environment."
     )
 
+# if not LLM_PROVIDER:
+#     raise RuntimeError(
+#         "LLM_PROVIDER is missing from the environment."
+#     )
 
+# if not LLM_MODEL:
+#     raise RuntimeError(
+#         "LLM_MODEL is missing from the environment."
+#     )
 
-# print(
-#     "WhatsApp token loaded:",
-#     f"{ACCESS_TOKEN[:8]}...{ACCESS_TOKEN[-4:]}",
-# )
-# print("Token loaded:", bool(ACCESS_TOKEN))
-# print("Token prefix:", ACCESS_TOKEN[:8] if ACCESS_TOKEN else "missing")
-# print("Token length:", len(ACCESS_TOKEN) if ACCESS_TOKEN else 0)
-# print("Starts with Bearer:", ACCESS_TOKEN.startswith("Bearer") if ACCESS_TOKEN else False)
-# print("Phone Number ID:", PHONE_NUMBER_ID)
-# print("Graph Version:", GRAPH_VERSION)
-# print("IP hash secret loaded:", bool(IP_HASH_SECRET))
+# if not LLM_API_KEY:
+#     raise RuntimeError(
+#         "LLM_API_KEY is missing from the environment."
+#     )
+

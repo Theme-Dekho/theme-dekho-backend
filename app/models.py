@@ -407,4 +407,133 @@ class QuoteRequest(Base):
         nullable=False,
         default=now_ist,
         onupdate=now_ist,
-    )           
+    )
+
+class AIWebsiteGeneration(Base):
+    __tablename__ = "ai_website_generations"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id",
+            name="uq_ai_generation_user",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey(
+            "users.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    source_page: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        index=True,
+    )
+
+    industry: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    sub_industry: Mapped[str] = mapped_column(
+        String(150),
+        nullable=False,
+    )
+
+    selected_pages: Mapped[list] = mapped_column(
+        JSON,
+        nullable=False,
+    )
+
+    selected_features: Mapped[list] = mapped_column(
+        JSON,
+        nullable=False,
+        default=list,
+    )
+
+    business_name: Mapped[str] = mapped_column(
+        String(150),
+        nullable=False,
+    )
+
+    business_phone: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+    )
+
+    business_email: Mapped[str | None] = mapped_column(
+        String(150),
+        nullable=True,
+    )
+
+    business_address: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+
+    business_description: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    generation_status: Mapped[str] = mapped_column(
+        String(30),
+        nullable=False,
+        default="pending",
+        index=True,
+    )
+
+    generated_url: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True,
+    )
+
+    expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime,
+        nullable=True,
+        index=True,
+    )
+
+    llm_provider: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
+    )
+
+    llm_model: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    generated_content: Mapped[dict | None] = mapped_column(
+        JSON,
+        nullable=True,
+    )
+
+    error_message: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+        onupdate=now_ist,
+    )            

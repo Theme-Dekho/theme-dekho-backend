@@ -430,4 +430,244 @@ class QuoteRequestResponse(BaseModel):
 
     model_config = {
         "from_attributes": True,
-    }    
+    }
+
+
+class AIWebsiteGenerationCreate(BaseModel):
+    source_page: str = Field(
+        min_length=2,
+        max_length=50,
+    )
+
+    industry: str = Field(
+        min_length=2,
+        max_length=100,
+    )
+
+    sub_industry: str = Field(
+        min_length=2,
+        max_length=150,
+    )
+
+    selected_pages: list[str] = Field(
+        min_length=1,
+    )
+
+    selected_features: list[str] = Field(
+        default_factory=list,
+    )
+
+    business_name: str = Field(
+        min_length=2,
+        max_length=150,
+    )
+
+    business_phone: str = Field(
+        min_length=10,
+        max_length=20,
+    )
+
+    business_email: EmailStr | None = None
+
+    business_address: str | None = Field(
+        default=None,
+        max_length=255,
+    )
+
+    business_description: str | None = Field(
+        default=None,
+        max_length=5000,
+    )
+
+    # @field_validator("source_page")
+    # @classmethod
+    # def validate_source_page(
+    #     cls,
+    #     value: str,
+    # ) -> str:
+    #     cleaned_value = value.strip().lower()
+
+    #     allowed_sources = {
+    #         "ai_builder",
+    #         "build_interior",
+    #     }
+
+    #     if cleaned_value not in allowed_sources:
+    #         raise ValueError(
+    #             "Invalid AI builder source page.",
+    #         )
+
+    #     return cleaned_value
+    @field_validator("source_page")
+    @classmethod
+    def validate_source_page(
+        cls,
+        value: str,
+    ) -> str:
+        cleaned_value = value.strip().lower()
+
+        if cleaned_value == "ai_builder":
+            return cleaned_value
+
+        if re.fullmatch(
+            r"build_[a-z0-9_]+",
+            cleaned_value,
+        ):
+            return cleaned_value
+
+        raise ValueError(
+            "Invalid AI builder source page.",
+        )
+    
+
+    @field_validator("business_phone")
+    @classmethod
+    def validate_business_phone(
+        cls,
+        value: str,
+    ) -> str:
+        cleaned_value = re.sub(r"\D", "", value)
+
+        if not re.fullmatch(r"[6-9]\d{9}", cleaned_value):
+            raise ValueError(
+                "Invalid Indian Mobile Number",
+            )
+
+        return cleaned_value
+
+class AIWebsiteGenerationResponse(BaseModel):
+    id: int
+    user_id: int
+
+    source_page: str
+
+    industry: str
+    sub_industry: str
+
+    selected_pages: list[str]
+    selected_features: list[str]
+
+    business_name: str
+    business_phone: str
+    business_email: str | None
+    business_address: str | None
+    business_description: str | None
+
+    generation_status: str
+
+    generated_url: str | None
+    expires_at: datetime | None
+
+    llm_provider: str | None
+    llm_model: str | None
+
+    generated_content: dict[str, Any] | None
+
+    error_message: str | None
+
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+    }
+
+class AIWebsiteSection(BaseModel):
+    section_type: str = Field(
+        min_length=1,
+        max_length=100,
+    )
+
+    heading: str | None = Field(
+        default=None,
+        max_length=200,
+    )
+
+    subheading: str | None = Field(
+        default=None,
+        max_length=500,
+    )
+
+    content: str | None = Field(
+        default=None,
+        max_length=5000,
+    )
+
+    cta_text: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
+
+class AIWebsitePage(BaseModel):
+    page_name: str = Field(
+        min_length=1,
+        max_length=100,
+    )
+
+    slug: str = Field(
+        min_length=1,
+        max_length=150,
+    )
+
+    title: str = Field(
+        min_length=1,
+        max_length=200,
+    )
+
+    meta_description: str | None = Field(
+        default=None,
+        max_length=300,
+    )
+
+    sections: list[AIWebsiteSection] = Field(
+        default_factory=list,
+    )
+
+
+class AIWebsiteTheme(BaseModel):
+    style: str = Field(
+        min_length=1,
+        max_length=100,
+    )
+
+    primary_color: str = Field(
+        min_length=4,
+        max_length=20,
+    )
+
+    secondary_color: str = Field(
+        min_length=4,
+        max_length=20,
+    )
+
+    accent_color: str | None = Field(
+        default=None,
+        max_length=20,
+    )
+
+    font_style: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
+
+class AIGeneratedWebsite(BaseModel):
+    business_name: str
+
+    tagline: str | None = None
+
+    industry: str
+    sub_industry: str
+
+    theme: AIWebsiteTheme
+
+    pages: list[AIWebsitePage]
+
+    features: list[str] = Field(
+        default_factory=list,
+    )
+
+    phone: str
+    email: str | None = None
+    address: str | None = None                

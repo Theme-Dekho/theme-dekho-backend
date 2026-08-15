@@ -10,6 +10,7 @@ from app.routes.analytics import router as analytics_router
 from app.routes.wishlist import router as wishlist_router
 from app.routes.enquiries import router as enquiries_router
 from app.routes import quote_request
+from app.routes import ai_website
 
 app = FastAPI(
     title="OTP Verification API",
@@ -37,3 +38,4 @@ app.include_router(analytics_router)
 app.include_router(wishlist_router)
 app.include_router(enquiries_router)
 app.include_router(quote_request.router)
+app.include_router(ai_website.router)

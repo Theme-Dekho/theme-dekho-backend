@@ -6,6 +6,7 @@ from app.models import ( User, AIWebsiteGeneration, now_ist)
 from app.schemas import ( AIWebsiteGenerationCreate, AIWebsiteGenerationResponse)
 from app.services.ai_website_service import (generate_ai_website, mark_generation_completed)
 from app.config import (LLM_PROVIDER, LLM_MODEL)
+from sqlalchemy.exc import IntegrityError
 
 
 router = APIRouter(
@@ -33,65 +34,118 @@ def create_ai_website_generation(
 ):
 
     existing_generation = (
-    database.query(AIWebsiteGeneration)
-    .filter(
-        AIWebsiteGeneration.user_id == current_user.id,
+        database.query(AIWebsiteGeneration)
+        .filter(
+            AIWebsiteGeneration.user_id == current_user.id,
+        )
+        .with_for_update()
+        .first()
     )
-    .first()
-)
 
-    if existing_generation:
+    if (
+        existing_generation
+        and existing_generation.generation_status
+        in {
+            "pending",
+            "generating",
+            "completed",
+            "expired",
+        }
+    ):
         raise HTTPException(
             status_code=409,
             detail="You have already used your free AI website generation.",
         )
 
 
-    # industry = payload.industry.strip()
-
-    # if payload.source_page == "build_interior":
-    #     industry = "Interior & Architecture"
     industry = CAMPAIGN_INDUSTRY_MAP.get(
         payload.source_page,
         payload.industry.strip(),
     )
 
 
-    generation = AIWebsiteGeneration(
-        user_id=current_user.id,
+    if existing_generation:
+        generation = existing_generation
 
-        source_page=payload.source_page,
+        generation.source_page = payload.source_page
+        generation.industry = industry
+        generation.sub_industry = payload.sub_industry.strip()
 
-        industry=industry,
-        sub_industry=payload.sub_industry.strip(),
+        generation.selected_pages = payload.selected_pages
+        generation.selected_features = payload.selected_features
 
-        selected_pages=payload.selected_pages,
-        selected_features=payload.selected_features,
+        generation.business_name = payload.business_name.strip()
+        generation.business_phone = payload.business_phone
 
-        business_name=payload.business_name.strip(),
-        business_phone=payload.business_phone,
-        business_email=(
+        generation.business_email = (
             str(payload.business_email)
             if payload.business_email
             else None
-        ),
-        business_address=(
+        )
+
+        generation.business_address = (
             payload.business_address.strip()
             if payload.business_address
             else None
-        ),
-        business_description=(
+        )
+
+        generation.business_description = (
             payload.business_description.strip()
             if payload.business_description
             else None
-        ),
+        )
 
-        generation_status="pending",
-    )
+        generation.generation_status = "pending"
+        generation.generated_url = None
+        generation.generated_content = None
+        generation.expires_at = None
+        generation.llm_provider = None
+        generation.llm_model = None
+        generation.error_message = None
 
-    database.add(generation)
-    database.commit()
+    else:
+        generation = AIWebsiteGeneration(
+            user_id=current_user.id,
+            source_page=payload.source_page,
+            industry=industry,
+            sub_industry=payload.sub_industry.strip(),
+            selected_pages=payload.selected_pages,
+            selected_features=payload.selected_features,
+            business_name=payload.business_name.strip(),
+            business_phone=payload.business_phone,
+            business_email=(
+                str(payload.business_email)
+                if payload.business_email
+                else None
+            ),
+            business_address=(
+                payload.business_address.strip()
+                if payload.business_address
+                else None
+            ),
+            business_description=(
+                payload.business_description.strip()
+                if payload.business_description
+                else None
+            ),
+            generation_status="pending",
+        )
+
+        database.add(generation)
+
+    try:
+        database.commit()
+
+    except IntegrityError:
+        database.rollback()
+
+        raise HTTPException(
+            status_code=409,
+            detail="You have already used your free AI website generation.",
+        )
+
     database.refresh(generation)
+
 
     try:
         generation.generation_status = "generating"
@@ -103,18 +157,6 @@ def create_ai_website_generation(
             generation
         )
 
-        # generation.generated_content = generated_content
-        # generation.generation_status = "completed"
-
-        # database.commit()
-        # database.refresh(generation)
-        # mark_generation_completed(
-        #     generation=generation,
-        #     generated_url=f"/generated/{generation.id}",
-        #     generated_content=generated_content,
-        #     llm_provider="gemini",
-        #     llm_model="gemini-2.5-flash",
-        # )
         mark_generation_completed(
             generation=generation,
             generated_url=f"/generated/{generation.id}",

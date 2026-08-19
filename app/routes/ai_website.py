@@ -183,6 +183,44 @@ def create_ai_website_generation(
 
 
 @router.get(
+    "/me",
+    response_model=AIWebsiteGenerationResponse,
+)
+def get_my_ai_website_generation(
+    database: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    generation = (
+        database.query(AIWebsiteGeneration)
+        .filter(
+            AIWebsiteGeneration.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    if not generation:
+        raise HTTPException(
+            status_code=404,
+            detail="AI website generation not found.",
+        )
+
+    if (
+        generation.expires_at
+        and generation.expires_at < now_ist()
+    ):
+        if generation.generation_status != "expired":
+            generation.generation_status = "expired"
+            database.commit()
+
+        raise HTTPException(
+            status_code=410,
+            detail="Generated website has expired.",
+        )
+
+    return generation
+
+
+@router.get(
     "/{generation_id}",
     response_model=AIWebsiteGenerationResponse,
 )

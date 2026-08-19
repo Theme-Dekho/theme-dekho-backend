@@ -1,6 +1,7 @@
 from google import genai
 from google.genai import types
 from app.schemas import AIGeneratedWebsite
+import time
 from app.config import (LLM_PROVIDER, LLM_MODEL, LLM_API_KEY)
 
 
@@ -34,14 +35,49 @@ def generate_website_content(
         api_key=LLM_API_KEY,
     )
 
-    response = client.models.generate_content(
-        model=LLM_MODEL,
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=AIGeneratedWebsite,
-        ),
-    )
+    # response = client.models.generate_content(
+    #     model=LLM_MODEL,
+    #     contents=prompt,
+    #     config=types.GenerateContentConfig(
+    #         response_mime_type="application/json",
+    #         response_schema=AIGeneratedWebsite,
+    #     ),
+    # )
+    response = None
+
+    max_attempts = 4
+
+    for attempt in range(max_attempts):
+        try:
+            response = client.models.generate_content(
+                model=LLM_MODEL,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=AIGeneratedWebsite,
+                ),
+            )
+
+            break
+
+        except Exception as exc:
+            error_text = str(exc)
+
+            is_temporary_error = (
+                "503" in error_text
+                or "UNAVAILABLE" in error_text
+                or "high demand" in error_text.lower()
+            )
+
+            if (
+                not is_temporary_error
+                or attempt == max_attempts - 1
+            ):
+                raise
+
+            wait_seconds = 2 ** attempt
+
+            time.sleep(wait_seconds)
 
     if not response.text:
         raise RuntimeError(

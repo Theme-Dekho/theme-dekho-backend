@@ -572,15 +572,74 @@ class AIWebsiteGenerationResponse(BaseModel):
         "from_attributes": True,
     }
 
+class AIWebsiteCTA(BaseModel):
+    text: str = Field(
+        min_length=1,
+        max_length=100,
+    )
+
+    style: str | None = Field(
+        default=None,
+        max_length=50,
+    )
+
+    action: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
+
+class AIWebsiteItem(BaseModel):
+    title: str = Field(
+        min_length=1,
+        max_length=200,
+    )
+
+    description: str | None = Field(
+        default=None,
+        max_length=1000,
+    )
+
+    icon: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
+    label: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
+
 class AIWebsiteSection(BaseModel):
     section_type: str = Field(
         min_length=1,
         max_length=100,
     )
 
+    layout: str | None = Field(
+        default=None,
+        max_length=500,
+    )
+
+    visual_style: str | None = Field(
+        default=None,
+        max_length=150,
+    )
+
+    background_style: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
     heading: str | None = Field(
         default=None,
         max_length=200,
+    )
+
+    eyebrow: str | None = Field(
+        default=None,
+        max_length=100,
     )
 
     subheading: str | None = Field(
@@ -593,9 +652,28 @@ class AIWebsiteSection(BaseModel):
         max_length=5000,
     )
 
-    cta_text: str | None = Field(
+    items: list[AIWebsiteItem] = Field(
+        default_factory=list,
+    )
+
+    primary_cta: AIWebsiteCTA | None = None
+
+    secondary_cta: AIWebsiteCTA | None = None
+
+    image_direction: str | None = Field(
         default=None,
-        max_length=100,
+        max_length=1000,
+    )
+
+    alignment: str | None = Field(
+        default=None,
+        max_length=50,
+    )
+
+    columns: int | None = Field(
+        default=None,
+        ge=1,
+        le=4,
     )
 
 
@@ -606,9 +684,28 @@ class AIWebsitePage(BaseModel):
     )
 
     slug: str = Field(
-        min_length=1,
+        default="",
         max_length=150,
     )
+
+    @field_validator("slug")
+    @classmethod
+    def normalize_slug(
+        cls,
+        value: str,
+    ) -> str:
+        cleaned_value = value.strip().lower()
+
+        if not cleaned_value:
+            return "home"
+
+        cleaned_value = re.sub(
+            r"[^a-z0-9]+",
+            "-",
+            cleaned_value,
+        )
+
+        return cleaned_value.strip("-") or "home"
 
     title: str = Field(
         min_length=1,
@@ -620,6 +717,11 @@ class AIWebsitePage(BaseModel):
         max_length=300,
     )
 
+    page_style: str | None = Field(
+        default=None,
+        max_length=150,
+    )
+
     sections: list[AIWebsiteSection] = Field(
         default_factory=list,
     )
@@ -628,7 +730,7 @@ class AIWebsitePage(BaseModel):
 class AIWebsiteTheme(BaseModel):
     style: str = Field(
         min_length=1,
-        max_length=100,
+        max_length=500,
     )
 
     primary_color: str = Field(
@@ -646,9 +748,54 @@ class AIWebsiteTheme(BaseModel):
         max_length=20,
     )
 
-    font_style: str | None = Field(
+    background_color: str | None = Field(
+        default=None,
+        max_length=20,
+    )
+
+    surface_color: str | None = Field(
+        default=None,
+        max_length=20,
+    )
+
+    text_color: str | None = Field(
+        default=None,
+        max_length=20,
+    )
+
+    muted_text_color: str | None = Field(
+        default=None,
+        max_length=20,
+    )
+
+    heading_font: str | None = Field(
         default=None,
         max_length=100,
+    )
+
+    body_font: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
+    button_style: str | None = Field(
+        default=None,
+        max_length=500,
+    )
+
+    card_style: str | None = Field(
+        default=None,
+        max_length=500,
+    )
+
+    border_radius: str | None = Field(
+        default=None,
+        max_length=50,
+    )
+
+    shadow_style: str | None = Field(
+        default=None,
+        max_length=500,
     )
 
 
@@ -660,6 +807,11 @@ class AIGeneratedWebsite(BaseModel):
     industry: str
     sub_industry: str
 
+    brand_personality: str | None = Field(
+        default=None,
+        max_length=500,
+    )
+
     theme: AIWebsiteTheme
 
     pages: list[AIWebsitePage]
@@ -670,4 +822,104 @@ class AIGeneratedWebsite(BaseModel):
 
     phone: str
     email: str | None = None
-    address: str | None = None                
+    address: str | None = None    
+
+# class AIWebsiteSection(BaseModel):
+#     section_type: str = Field(
+#         min_length=1,
+#         max_length=100,
+#     )
+
+#     heading: str | None = Field(
+#         default=None,
+#         max_length=200,
+#     )
+
+#     subheading: str | None = Field(
+#         default=None,
+#         max_length=500,
+#     )
+
+#     content: str | None = Field(
+#         default=None,
+#         max_length=5000,
+#     )
+
+#     cta_text: str | None = Field(
+#         default=None,
+#         max_length=100,
+#     )
+
+
+# class AIWebsitePage(BaseModel):
+#     page_name: str = Field(
+#         min_length=1,
+#         max_length=100,
+#     )
+
+#     slug: str = Field(
+#         min_length=1,
+#         max_length=150,
+#     )
+
+#     title: str = Field(
+#         min_length=1,
+#         max_length=200,
+#     )
+
+#     meta_description: str | None = Field(
+#         default=None,
+#         max_length=300,
+#     )
+
+#     sections: list[AIWebsiteSection] = Field(
+#         default_factory=list,
+#     )
+
+
+# class AIWebsiteTheme(BaseModel):
+#     style: str = Field(
+#         min_length=1,
+#         max_length=100,
+#     )
+
+#     primary_color: str = Field(
+#         min_length=4,
+#         max_length=20,
+#     )
+
+#     secondary_color: str = Field(
+#         min_length=4,
+#         max_length=20,
+#     )
+
+#     accent_color: str | None = Field(
+#         default=None,
+#         max_length=20,
+#     )
+
+#     font_style: str | None = Field(
+#         default=None,
+#         max_length=100,
+#     )
+
+
+# class AIGeneratedWebsite(BaseModel):
+#     business_name: str
+
+#     tagline: str | None = None
+
+#     industry: str
+#     sub_industry: str
+
+#     theme: AIWebsiteTheme
+
+#     pages: list[AIWebsitePage]
+
+#     features: list[str] = Field(
+#         default_factory=list,
+#     )
+
+#     phone: str
+#     email: str | None = None
+#     address: str | None = None                

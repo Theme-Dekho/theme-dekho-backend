@@ -389,6 +389,11 @@ class QuoteRequest(Base):
         nullable=False,
     )
 
+    source_url: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True,
+    )
+
     status: Mapped[str] = mapped_column(
         String(30),
         nullable=False,

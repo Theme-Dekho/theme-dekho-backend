@@ -402,6 +402,11 @@ class QuoteRequestCreate(BaseModel):
         max_length=100,
     )
 
+    source_url: str | None = Field(
+        default=None,
+        max_length=500,
+    )
+
     @field_validator("whatsapp_number")
     @classmethod
     def validate_whatsapp_number(
@@ -424,6 +429,7 @@ class QuoteRequestResponse(BaseModel):
     business_name: str
     whatsapp_number: str
     website_type: str
+    source_url: str | None
     status: str
     created_at: datetime
     updated_at: datetime

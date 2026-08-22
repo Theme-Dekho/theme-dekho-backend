@@ -37,6 +37,7 @@ def create_quote_request(
         business_name=data.business_name,
         whatsapp_number=data.whatsapp_number,
         website_type=data.website_type,
+        source_url=data.source_url,
         status="submitted",
     )
 

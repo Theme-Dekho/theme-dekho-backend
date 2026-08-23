@@ -561,6 +561,9 @@ class AIWebsiteGenerationResponse(BaseModel):
 
     generation_status: str
 
+    template_type: str | None = None
+    template_version: str | None = None
+
     generated_url: str | None
     expires_at: datetime | None
 
@@ -830,102 +833,60 @@ class AIGeneratedWebsite(BaseModel):
     email: str | None = None
     address: str | None = None    
 
-# class AIWebsiteSection(BaseModel):
-#     section_type: str = Field(
-#         min_length=1,
-#         max_length=100,
-#     )
 
-#     heading: str | None = Field(
-#         default=None,
-#         max_length=200,
-#     )
-
-#     subheading: str | None = Field(
-#         default=None,
-#         max_length=500,
-#     )
-
-#     content: str | None = Field(
-#         default=None,
-#         max_length=5000,
-#     )
-
-#     cta_text: str | None = Field(
-#         default=None,
-#         max_length=100,
-#     )
+class InteriorTemplateColors(BaseModel):
+    background: str
+    backgroundSoft: str
+    accent: str
+    secondary: str
+    text: str
 
 
-# class AIWebsitePage(BaseModel):
-#     page_name: str = Field(
-#         min_length=1,
-#         max_length=100,
-#     )
-
-#     slug: str = Field(
-#         min_length=1,
-#         max_length=150,
-#     )
-
-#     title: str = Field(
-#         min_length=1,
-#         max_length=200,
-#     )
-
-#     meta_description: str | None = Field(
-#         default=None,
-#         max_length=300,
-#     )
-
-#     sections: list[AIWebsiteSection] = Field(
-#         default_factory=list,
-#     )
+class InteriorTemplateHighlight(BaseModel):
+    title: str
+    label: str
 
 
-# class AIWebsiteTheme(BaseModel):
-#     style: str = Field(
-#         min_length=1,
-#         max_length=100,
-#     )
-
-#     primary_color: str = Field(
-#         min_length=4,
-#         max_length=20,
-#     )
-
-#     secondary_color: str = Field(
-#         min_length=4,
-#         max_length=20,
-#     )
-
-#     accent_color: str | None = Field(
-#         default=None,
-#         max_length=20,
-#     )
-
-#     font_style: str | None = Field(
-#         default=None,
-#         max_length=100,
-#     )
+class InteriorTemplateProject(BaseModel):
+    title: str
 
 
-# class AIGeneratedWebsite(BaseModel):
-#     business_name: str
+class InteriorTemplateProcessStep(BaseModel):
+    title: str
+    description: str
 
-#     tagline: str | None = None
 
-#     industry: str
-#     sub_industry: str
+class InteriorTemplateTestimonial(BaseModel):
+    name: str
+    text: str
 
-#     theme: AIWebsiteTheme
 
-#     pages: list[AIWebsitePage]
+class InteriorTemplateGeneratedContent(BaseModel):
+    businessName: str
+    tagline: str
+    description: str
 
-#     features: list[str] = Field(
-#         default_factory=list,
-#     )
+    phone: str | None = None
+    email: str | None = None
+    address: str | None = None
 
-#     phone: str
-#     email: str | None = None
-#     address: str | None = None                
+    colors: InteriorTemplateColors
+
+    highlights: list[InteriorTemplateHighlight] = Field(
+        default_factory=list
+    )
+
+    projects: list[InteriorTemplateProject] = Field(
+        default_factory=list
+    )
+
+    process: list[InteriorTemplateProcessStep] = Field(
+        default_factory=list
+    )
+
+    aboutTitle: str
+    aboutDescription: str
+
+    testimonials: list[InteriorTemplateTestimonial] = Field(
+        default_factory=list
+    )             

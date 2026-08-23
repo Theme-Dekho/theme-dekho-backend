@@ -499,6 +499,16 @@ class AIWebsiteGeneration(Base):
         index=True,
     )
 
+    template_type: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
+    )
+
+    template_version: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
+    )
+
     generated_url: Mapped[str | None] = mapped_column(
         String(500),
         nullable=True,

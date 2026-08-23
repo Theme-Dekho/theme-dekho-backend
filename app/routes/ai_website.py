@@ -4,7 +4,8 @@ from app.database import get_db
 from app.dependencies import get_current_user
 from app.models import ( User, AIWebsiteGeneration, now_ist)
 from app.schemas import ( AIWebsiteGenerationCreate, AIWebsiteGenerationResponse)
-from app.services.ai_website_service import (generate_ai_website, mark_generation_completed)
+from app.services.ai_website_service import (mark_generation_completed,)
+from app.services.ai_generation.service import (generate_website_content,)
 from app.config import (LLM_PROVIDER, LLM_MODEL)
 from sqlalchemy.exc import IntegrityError
 
@@ -98,6 +99,8 @@ def create_ai_website_generation(
         generation.generation_status = "pending"
         generation.generated_url = None
         generation.generated_content = None
+        generation.template_type = None
+        generation.template_version = None
         generation.expires_at = None
         generation.llm_provider = None
         generation.llm_model = None
@@ -153,8 +156,18 @@ def create_ai_website_generation(
         database.commit()
         database.refresh(generation)
 
-        generated_content = generate_ai_website(
+        generation_result = generate_website_content(
             generation
+        )
+
+        generated_content = generation_result["content"]
+
+        generation.template_type = generation_result[
+            "template_type"
+        ]
+
+        generation.template_version = (
+            f"{generation.template_type}-v1"
         )
 
         mark_generation_completed(

@@ -47,6 +47,13 @@ def generate_website_content(generation):
         )
     )
 
+    print(
+        "TEMPLATE:",
+        template_type,
+        "| REFERENCE IMAGE:",
+        reference_image_path,
+    )
+
     if template_type == "interior":
         prompt = build_interior_prompt(
             generation

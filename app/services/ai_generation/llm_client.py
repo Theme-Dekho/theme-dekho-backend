@@ -67,13 +67,32 @@ def generate_structured_content(
 ) -> T:
     validate_llm_configuration()
 
-    if LLM_PROVIDER != "openrouter":
+    # OPENROUTER
+    # if LLM_PROVIDER != "openrouter":
+    #     raise RuntimeError(
+    #         f"Unsupported LLM provider: {LLM_PROVIDER}"
+    #     )
+
+    # client = OpenAI(
+    #     base_url="https://openrouter.ai/api/v1",
+    #     api_key=LLM_API_KEY,
+    # )
+
+   
+    # GROQ API MODEL
+    if LLM_PROVIDER == "openrouter":
+        base_url = "https://openrouter.ai/api/v1"
+
+    elif LLM_PROVIDER == "groq":
+        base_url = "https://api.groq.com/openai/v1"
+
+    else:
         raise RuntimeError(
             f"Unsupported LLM provider: {LLM_PROVIDER}"
         )
 
     client = OpenAI(
-        base_url="https://openrouter.ai/api/v1",
+        base_url=base_url,
         api_key=LLM_API_KEY,
     )
 

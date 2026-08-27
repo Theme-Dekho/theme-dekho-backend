@@ -551,4 +551,69 @@ class AIWebsiteGeneration(Base):
         nullable=False,
         default=now_ist,
         onupdate=now_ist,
-    )            
+    )
+
+# Contact Form
+class ContactRequest(Base):
+    __tablename__ = "contact_requests"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    user_id: Mapped[int | None] = mapped_column(
+        BigInteger,
+        ForeignKey(
+            "users.id",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
+        index=True,
+    )
+
+    name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    email: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    phone: Mapped[str] = mapped_column(
+        String(15),
+        nullable=False,
+    )
+
+    message: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    source_url: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True,
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(30),
+        nullable=False,
+        default="submitted",
+        index=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+        onupdate=now_ist,
+    )                

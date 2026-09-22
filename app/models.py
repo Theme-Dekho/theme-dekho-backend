@@ -616,4 +616,142 @@ class ContactRequest(Base):
         nullable=False,
         default=now_ist,
         onupdate=now_ist,
-    )                
+    )
+
+# Admin Panel
+class AdminUser(Base):
+    __tablename__ = "admin_users"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    username: Mapped[str] = mapped_column(
+        String(100),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+
+    name: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    email: Mapped[str | None] = mapped_column(
+        String(255),
+        unique=True,
+        nullable=True,
+        index=True,
+    )
+
+    password_hash: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    role: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="USER",
+        index=True,
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="active",
+        index=True,
+    )
+
+    created_by: Mapped[int | None] = mapped_column(
+        BigInteger,
+        ForeignKey("admin_users.id"),
+        nullable=True,
+        index=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+        onupdate=now_ist,
+    )
+
+    last_login_at: Mapped[datetime | None] = mapped_column(
+        DateTime,
+        nullable=True,
+    )
+
+
+class Permission(Base):
+    __tablename__ = "permissions"
+
+    id = Column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    permission_key = Column(
+        String(100),
+        unique=True,
+        nullable=False,
+    )
+
+    permission_name = Column(
+        String(150),
+        nullable=False,
+    )
+
+    module = Column(
+        String(100),
+        nullable=False,
+    )
+
+    description = Column(
+        Text,
+        nullable=True,
+    )
+
+    created_at = Column(
+        DateTime,
+        default=now_ist,
+        nullable=False,
+    )
+
+
+class AdminPermission(Base):
+    __tablename__ = "admin_permissions"
+
+    id = Column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    admin_id = Column(
+        BigInteger,
+        ForeignKey("admin_users.id"),
+        nullable=False,
+    )
+
+    permission_id = Column(
+        BigInteger,
+        ForeignKey("permissions.id"),
+        nullable=False,
+    )
+
+    created_at = Column(
+        DateTime,
+        default=now_ist,
+        nullable=False,
+    )         

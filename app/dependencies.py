@@ -2,8 +2,9 @@ from fastapi import Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import User
+from app.models import User, AdminUser
 from app.services.session_service import get_session
+from app.services.admin_session_service import get_admin_session
 
 
 def get_current_user(
@@ -78,3 +79,82 @@ def get_optional_current_user(
         return None
 
     return user
+
+
+def get_current_admin(
+    request: Request,
+    database: Session = Depends(get_db),
+) -> AdminUser:
+
+    session_id = request.cookies.get(
+        "admin_session_id"
+    )
+
+    if not session_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Admin authentication required.",
+        )
+
+    session_data = get_admin_session(
+        session_id
+    )
+
+    if session_data is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Admin session expired or invalid.",
+        )
+
+    admin_id = session_data.get("admin_id")
+
+    if admin_id is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid admin session.",
+        )
+
+    admin = database.get(
+        AdminUser,
+        int(admin_id),
+    )
+
+    if admin is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Admin account not found.",
+        )
+
+    if admin.status != "active":
+        raise HTTPException(
+            status_code=403,
+            detail="Admin account is inactive.",
+        )
+
+    return admin
+
+
+def require_master(
+    admin: AdminUser = Depends(get_current_admin),
+) -> AdminUser:
+
+    if admin.role != "MASTER":
+        raise HTTPException(
+            status_code=403,
+            detail="Master administrator access required.",
+        )
+
+    return admin
+
+
+def require_root_or_master(
+    admin: AdminUser = Depends(get_current_admin),
+) -> AdminUser:
+
+    if admin.role not in {"MASTER", "ROOT"}:
+        raise HTTPException(
+            status_code=403,
+            detail="Root or Master administrator access required.",
+        )
+
+    return admin    

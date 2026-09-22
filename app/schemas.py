@@ -889,4 +889,25 @@ class InteriorTemplateGeneratedContent(BaseModel):
 
     testimonials: list[InteriorTemplateTestimonial] = Field(
         default_factory=list
-    )             
+    )
+
+
+class AdminLoginRequest(BaseModel):
+    username: str = Field(
+        min_length=3,
+        max_length=100,
+    )
+
+    password: str = Field(
+        min_length=8,
+        max_length=128,
+    )
+
+
+class AdminAuthResponse(BaseModel):
+    id: int
+    username: str
+    name: str | None
+    email: str | None
+    role: str
+    status: str                 

@@ -4,8 +4,9 @@ from app import models
 from app.database import Base, engine
 from app.routes.auth import router as auth_router
 from app.routes.admin_auth import router as admin_auth_router
+from app.routes.admin_catalog import router as admin_catalog_router
 from app.routes.admin_users import router as admin_users_router
-from app.services.admin_bootstrap import ensure_master_admin, ensure_permissions
+from app.services.admin_bootstrap import ensure_master_admin, ensure_permissions, ensure_catalog_categories, ensure_catalog_products
 from app.routes import attribution
 from app.routes import account
 from app.routes.analytics import router as analytics_router
@@ -35,10 +36,13 @@ app.add_middleware(
 Base.metadata.create_all(bind=engine)
 
 ensure_permissions()
+ensure_catalog_categories()
+ensure_catalog_products()
 ensure_master_admin()
 
 app.include_router(auth_router)
 app.include_router(admin_auth_router)
+app.include_router(admin_catalog_router)
 app.include_router(admin_users_router)
 app.include_router(attribution.router)
 app.include_router(account.router)

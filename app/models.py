@@ -618,6 +618,216 @@ class ContactRequest(Base):
         onupdate=now_ist,
     )
 
+
+# Theme Dekho Catalog
+class Category(Base):
+    __tablename__ = "categories"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    slug: Mapped[str] = mapped_column(
+        String(100),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+
+    name: Mapped[str] = mapped_column(
+        String(150),
+        nullable=False,
+    )
+
+    description: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="active",
+        index=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+        onupdate=now_ist,
+    )
+
+
+class Subcategory(Base):
+    __tablename__ = "subcategories"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    category_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey(
+            "categories.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    slug: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        index=True,
+    )
+
+    name: Mapped[str] = mapped_column(
+        String(150),
+        nullable=False,
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="active",
+        index=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+        onupdate=now_ist,
+    )
+
+
+class Product(Base):
+    __tablename__ = "products"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    subcategory_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey(
+            "subcategories.id",
+            ondelete="RESTRICT",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    slug: Mapped[str] = mapped_column(
+        String(200),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+
+    name: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    price: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+    )
+
+    price_display: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+    )
+
+    price_tier: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    discount: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+        default=0,
+    )
+
+    image: Mapped[str] = mapped_column(
+        String(500),
+        nullable=False,
+    )
+
+    alt: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    preview_url: Mapped[str] = mapped_column(
+        String(500),
+        nullable=False,
+    )
+
+    badges: Mapped[list | None] = mapped_column(
+        JSON,
+        nullable=True,
+    )
+
+    sold: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        default="0",
+    )
+
+    rating: Mapped[str] = mapped_column(
+        String(10),
+        nullable=False,
+        default="0",
+    )
+
+    tags: Mapped[list | None] = mapped_column(
+        JSON,
+        nullable=True,
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="active",
+        index=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+        onupdate=now_ist,
+    )        
+
+
 # Admin Panel
 class AdminUser(Base):
     __tablename__ = "admin_users"

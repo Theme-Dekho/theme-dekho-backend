@@ -825,7 +825,369 @@ class Product(Base):
         nullable=False,
         default=now_ist,
         onupdate=now_ist,
+    )
+
+
+
+class ProductDetail(Base):
+    __tablename__ = "product_details"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    product_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey(
+            "products.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+
+    tagline: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    current_price: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+    )
+
+    old_price: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+    )
+
+    discount: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+    )
+
+    price_range: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    rating: Mapped[str] = mapped_column(
+        String(10),
+        nullable=False,
+        default="0",
+    )
+
+    review_count: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+        default=0,
+    )
+
+    purchases: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+        default=0,
+    )
+
+    preview_url: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True,
+    )
+
+    main_image: Mapped[str] = mapped_column(
+        String(500),
+        nullable=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=now_ist,
+        onupdate=now_ist,
+    )
+
+
+
+class ProductDetailFeature(Base):
+    __tablename__ = "product_detail_features"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    product_detail_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey(
+            "product_details.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    icon: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    title: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    description: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    icon_background: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    sort_order: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+        default=0,
+    )
+
+
+class ProductDetailPackage(Base):
+    __tablename__ = "product_detail_packages"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    product_detail_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey(
+            "product_details.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    title: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    description: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    sort_order: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+        default=0,
+    )
+
+
+class ProductDetailAddon(Base):
+    __tablename__ = "product_detail_addons"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    product_detail_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey(
+            "product_details.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    addon_id: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    icon: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    name: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    description: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    price: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    sort_order: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+        default=0,
+    )
+
+
+class ProductDetailSpecification(Base):
+    __tablename__ = "product_detail_specifications"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    product_detail_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey(
+            "product_details.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    label: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    value: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    badge: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
+    )
+
+    sort_order: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+        default=0,
+    )
+
+
+class ProductDetailGallery(Base):
+    __tablename__ = "product_detail_gallery"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    product_detail_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey(
+            "product_details.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    image: Mapped[str] = mapped_column(
+        String(500),
+        nullable=False,
+    )
+
+    sort_order: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+        default=0,
+    )
+
+
+class ProductDetailReview(Base):
+    __tablename__ = "product_detail_reviews"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    product_detail_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey(
+            "product_details.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    review_id: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    name: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    initials: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+    )
+
+    location: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    role: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    rating: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+        default=5,
+    )
+
+    text: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    avatar_background: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    sort_order: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+        default=0,
     )        
+
 
 
 # Admin Panel

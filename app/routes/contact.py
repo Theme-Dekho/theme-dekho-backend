@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import ContactRequest
+from app.services.crm_lead_service import send_lead_to_crm
 
 router = APIRouter(prefix="/api", tags=["Contact"])
 
@@ -33,11 +34,23 @@ async def create_contact_request(
         db.commit()
         db.refresh(db_contact)
 
-        return {
-            "success": True,
-            "message": "Contact request submitted successfully.",
-            "id": db_contact.id
-        }
+        try:
+            crm_response = send_lead_to_crm(
+                name=db_contact.name,
+                phone=db_contact.phone,
+                email=db_contact.email,
+                source="Theme Dekho - Contact Form",
+                notes=(
+                    f"Message: {db_contact.message}\n"
+                    f"Source URL: {db_contact.source_url or 'Not provided'}"
+                ),
+            )
+            print("CRM lead submission response:", crm_response)
+
+        except Exception as error:
+            print("CRM lead submission failed:", str(error))
+
+
     except Exception as e:
         db.rollback()
         raise HTTPException(

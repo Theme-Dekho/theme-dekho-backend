@@ -10,6 +10,7 @@ from app.schemas import (
     EnquiryListResponse,
     EnquiryResponse,
 )
+from app.services.crm_lead_service import send_lead_to_crm
 
 
 router = APIRouter(
@@ -137,5 +138,24 @@ def create_enquiry(
 
     database.commit()
     database.refresh(enquiry)
+
+    try:
+        crm_response = send_lead_to_crm(
+            name=enquiry.customer_name,
+            phone=enquiry.phone,
+            email=enquiry.email,
+            source="Theme Dekho - Product Enquiry",
+            notes=(
+                f"Product: {enquiry.product_name}\n"
+                f"Product slug: {enquiry.product_slug}\n"
+                f"City: {enquiry.city or 'Not provided'}\n"
+                f"Selected add-ons: {enquiry.selected_addons or 'None'}\n"
+                f"Message: {enquiry.message or 'Not provided'}"
+            ),
+        )
+        print("CRM enquiry submission response:", crm_response)
+
+    except Exception as error:
+        print("CRM enquiry submission failed:", str(error))
 
     return enquiry

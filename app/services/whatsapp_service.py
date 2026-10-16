@@ -7,7 +7,7 @@ import requests
 from app.config import (
     ACCESS_TOKEN,
     PHONE_NUMBER_ID,
-    GRAPH_VERSION,
+    GRAPH_VERSION
 )
 
 WHATSAPP_TEMPLATE_NAME = os.getenv(
@@ -179,6 +179,5 @@ def send_otp(phone: str, otp: str) -> dict[str, Any]:
         raise WhatsAppAPIError(
             f"Could not connect to WhatsApp API: {error}"
         ) from error
-
 
     return parse_meta_response(response)

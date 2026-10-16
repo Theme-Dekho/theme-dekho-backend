@@ -8,6 +8,7 @@ from app.schemas import (
     QuoteRequestCreate,
     QuoteRequestResponse,
 )
+from app.services.crm_lead_service import send_lead_to_crm
 
 
 router = APIRouter(
@@ -44,5 +45,21 @@ def create_quote_request(
     database.add(quote_request)
     database.commit()
     database.refresh(quote_request)
+
+    try:
+        crm_response = send_lead_to_crm(
+            name=quote_request.business_name,
+            phone=quote_request.whatsapp_number,
+            email="",
+            source="Theme Dekho - Quote Request",
+            notes=(
+                f"Website type: {quote_request.website_type}\n"
+                f"Source URL: {quote_request.source_url or 'Not provided'}"
+            ),
+        )
+        print("CRM quote request submission response:", crm_response)
+
+    except Exception as error:
+        print("CRM quote request submission failed:", str(error))
 
     return quote_request
